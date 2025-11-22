@@ -1,42 +1,54 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const App = () => {
 
+  const [sort, setSort] = React.useState("")
+  const [search, Search] = React.useState("")
   const [category, setCategory] = React.useState("All")
-  const products = [
-  { name: "iPhone 15", price: 1500, category: "Mobile", image: "https://via.placeholder.com/300x200?text=iPhone+15" },
-  { name: "Samsung S24", price: 1300, category: "Mobile", image: "https://via.placeholder.com/300x200?text=Samsung+S24" },
-  { name: "Google Pixel 9", price: 1200, category: "Mobile", image: "https://via.placeholder.com/300x200?text=Pixel+9" },
 
-  { name: "MacBook Air", price: 2200, category: "Laptop", image: "https://via.placeholder.com/300x200?text=MacBook+Air" },
-  { name: "Dell XPS", price: 2500, category: "Laptop", image: "https://via.placeholder.com/300x200?text=Dell+XPS" },
-  { name: "HP Spectre", price: 2100, category: "Laptop", image: "https://via.placeholder.com/300x200?text=HP+Spectre" },
+  const [products, setProducts] = useState([
+    { name: "iPhone 15", price: 1500, category: "Mobile", image: "" },
+    { name: "Samsung S24", price: 1300, category: "Mobile", image: "" },
+    { name: "Google Pixel 9", price: 1200, category: "Mobile", image: "" },
 
-  { name: "Sony WH-1000XM5", price: 400, category: "Headphones", image: "https://via.placeholder.com/300x200?text=Sony+XM5" },
-  { name: "AirPods Pro 2", price: 300, category: "Headphones", image: "https://via.placeholder.com/300x200?text=AirPods+Pro+2" },
-  { name: "JBL Tune 760NC", price: 150, category: "Headphones", image: "https://via.placeholder.com/300x200?text=JBL+760NC" },
+    { name: "MacBook Air", price: 2200, category: "Laptop", image: "" },
+    { name: "Dell XPS", price: 2500, category: "Laptop", image: "" },
+    { name: "HP Spectre", price: 2100, category: "Laptop", image: "" },
 
-  { name: "iPad Pro", price: 1800, category: "Tablet", image: "https://via.placeholder.com/300x200?text=iPad+Pro" },
-  { name: "Samsung Galaxy Tab S9", price: 1400, category: "Tablet", image: "https://via.placeholder.com/300x200?text=Galaxy+Tab+S9" },
-  { name: "Lenovo Tab P12", price: 900, category: "Tablet", image: "https://via.placeholder.com/300x200?text=Lenovo+Tab+P12" },
+    // ... baaki products
+  ]);
 
-  { name: "Apple Watch Series 9", price: 600, category: "Smartwatch", image: "https://via.placeholder.com/300x200?text=Apple+Watch+9" },
-  { name: "Samsung Galaxy Watch 6", price: 450, category: "Smartwatch", image: "https://via.placeholder.com/300x200?text=Galaxy+Watch+6" },
-  { name: "Fitbit Versa 4", price: 250, category: "Smartwatch", image: "https://via.placeholder.com/300x200?text=Fitbit+Versa+4" }
-]
+  useEffect(() => {
+    // Fetch mobiles from DummyJSON API
+    fetch("https://dummyjson.com/products/category/smartphones")
+      .then((res) => res.json())
+      .then((data) => {
 
+        const mobileImages = data.products.map((p) => p.thumbnail); 
+
+        // Update products array: mobile category ke items ke liye images set karo
+        setProducts((prevProducts) =>
+          prevProducts.map((p, i) => {
+            if (p.category === "Mobile" && mobileImages[i]) {
+              return { ...p, image: mobileImages[i] };
+            }
+            return p;
+          })
+        );
+      })
+      .catch((err) => console.error(err));
+  }, []);
 const categories = [
   "All", "Laptop", "Mobile", "Headphones"
 ]
-
   return (
     <div>
-      <nav className='flex justify-around bg-gray-100 p-4'>
+      <nav className='flex flex-wrap justify-around bg-gray-100 p-4'>
         <div className='w-sm'>
           <input type="text" 
-          placeholder='Search items'
+          placeholder='Search Product'
           // onChange={() =>}
-          className='px-4 py-2 rounded-2xl'
+          className='px-4 py-2 rounded-2xl border-1'
           />
         </div>
         <div className='flex justify-around w-sm gap-3'>
@@ -48,7 +60,26 @@ const categories = [
             )
           }
         </div>
+        <div>
+          <select onChange={(e) => {
+            setSort(e.target.value)
+          }} className=' px-4 py-2 rounded-2xl border-1'>
+            <option value="">Sort by price</option>
+            <option value="high">High →Low</option>
+            <option value="low">Low → High</option>
+          </select>
+        </div>
       </nav>
+
+      {/* hero section  */}
+      <div className='h-screen flex flex-wrap justify-center items-center gap8'>
+          <div>
+            <img src={products[0].image} alt="" />
+            <h3>{products[0].name}</h3>
+            <p></p>
+            <p></p>
+          </div>
+      </div>
     </div>
   )
 }
