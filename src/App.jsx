@@ -11,51 +11,80 @@ const App = () => {
   ]
 
   const [products, setProducts] = useState([
-    { name: "iPhone 15", price: 1500, category: "Mobile", image: "" },
-    { name: "Samsung S24", price: 1300, category: "Mobile", image: "" },
-    { name: "Google Pixel 9", price: 1200, category: "Mobile", image: "" },
+    { name: "iPhone 15", price: 0, category: "Mobile", image: "" },
+    { name: "Samsung S24", price: 0, category: "Mobile", image: "" },
+    { name: "Google Pixel 9", price: 0, category: "Mobile", image: "" },
 
-    { name: "MacBook Air", price: 2200, category: "Laptop", image: "" },
-    { name: "Dell XPS", price: 2500, category: "Laptop", image: "" },
-    { name: "HP Spectre", price: 2100, category: "Laptop", image: "" },
+    { name: "MacBook Air", price: 0, category: "Laptop", image: "" },
+    { name: "Dell XPS", price: 0, category: "Laptop", image: "" },
 
-    { name: "Sony WH-1000XM5", price: 400, category: "Headphones", image: "" },
-    { name: "AirPods Pro 2", price: 300, category: "Headphones", image: "" },
-    { name: "JBL Tune 760NC", price: 150, category: "Headphones", image: "" },
+    { name: "Sony WH-1000XM5", price: 0, category: "Headphones", image: "" },
+    { name: "AirPods Pro 2", price: 0, category: "Headphones", image: "" },
+    { name: "JBL Tune 760NC", price: 0, category: "Headphones", image: "" },
 
-    { name: "iPad Pro", price: 1800, category: "Tablet", image: "" },
-    { name: "Samsung Galaxy Tab S9", price: 1400, category: "Tablet", image: "" },
-    { name: "Lenovo Tab P12", price: 900, category: "Tablet", image: "" },
+    { name: "iPad Pro", price: 0, category: "Tablet", image: "" },
+    { name: "Samsung Galaxy Tab S9", price: 0, category: "Tablet", image: "" },
+    { name: "Lenovo Tab P12", price: 0, category: "Tablet", image: "" },
 
   ]);
 
   useEffect(() => {
-    const fetchMobiles = fetch("https://dummyjson.com/products/category/smartphones").then(res => res.json());
-    // const fetchLaptops = fetch("https://dummyjson.com/products/category/laptops").then((res) => res.json());
-    fetchMobiles.then(data => {
-      console.log(data)
-    })
-    console.log(fetchMobiles)
-      // .then((res) => res.json())
-      // .then((data) => {
 
-      //   const mobileImages = data.products.map((p) => p.thumbnail);
+    const fetchData = async () => {
+      try {
 
-      //   let mobileIndex = 0;
+        // mobile data 
+        const response1 = await fetch("https://dummyjson.com/products/category/smartphones")
+        const fetchMobiles = await response1.json();
 
-      //   setProducts((prev) =>
-      //     prev.map((p) => {
-      //       if (p.category === "Mobile") {
-      //         const newImage = mobileImages[mobileIndex];
-      //         mobileIndex++;
-      //         return { ...p, image: newImage };
-      //       }
-      //       return p;
+        // laptop data 
+        const response2 = await fetch("https://dummyjson.com/products/category/laptops")
+        const fetchLaptops = await response2.json()
 
-      //     })
-      //   );
-      // });
+        // headPhones data 
+        const response3 = await fetch("https://dummyjson.com/products/category/mobile-accessories")
+        const fetchHeadPhones = await response3.json()
+
+        setProducts(prevProducts => {
+          return prevProducts.map((product, index) => {
+            if (product.category === "Mobile") {
+              return {
+                ...product,
+                price: fetchMobiles.products[index]?.price || "",
+                image: fetchMobiles.products[index]?.thumbnail || ""
+              };
+            } else if (product.category === "Laptop") {
+              return {
+                ...product,
+                price: fetchLaptops.products[index]?.price || "",
+                image: fetchLaptops.products[index]?.thumbnail || ""
+              }
+            }else {
+              return{
+                ...product,
+                price: fetchHeadPhones.products[index]?.price || "",
+                image: fetchHeadPhones.products[index]?.thumbnail || ""
+              }
+            }
+            
+            return product;
+          });
+        });
+
+      } catch (error) {
+
+      }
+    }
+
+
+    fetchData()
+
   }, []);
+
+  useEffect(() => {
+    for (let i = 0; i < products.length; i++)
+      console.log(products[i].image)
+  }, [products])
 
   const handleClick = ((e) => {
     e.preventDefault()
@@ -65,7 +94,7 @@ const App = () => {
       console.log("all")
     }
   })
-// *************************************************************************************
+  // *************************************************************************************
   return (
     <div>
       <nav className='flex flex-wrap justify-around bg-gray-100 p-4'>
@@ -102,17 +131,18 @@ const App = () => {
       <div className='h-screen flex flex-wrap justify-center items-center gap-8'>
 
         {products.map((p, index) => (
-          <div className='border-1 h-60 p-4 flex flex-col items-center gap-3' key={index}>
+          <div className='border-1 h-90 p-4 flex flex-col items-center gap-3' key={index}>
             <img src={p.image} alt={p.name} width="200" />
             <h3>{p.name}</h3>
             <p>Price: ${p.price}</p>
             <p>Category: {p.category}</p>
           </div>
         ))}
-
+        
       </div>
     </div>
   )
 }
 
 export default App
+
