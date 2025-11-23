@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react'
 
 const App = () => {
 
-  const [sort, setSort] = React.useState("")
-  const [search, Search] = React.useState("")
-  const [category, setCategory] = React.useState("All")
+  const [sort, setSort] = useState("")
+  const [search, setSearch] = useState("")
+  const [category, setCategory] = useState("All")
 
-  const categories = [
-    "All", "laptop", "Mobile", "Headphones"
-  ]
+  const categories = ["All", "Laptop", "Mobile", "Headphone"]
 
   const [products, setProducts] = useState([
     { name: "iPhone 15", price: 0, category: "Mobile", image: "" },
@@ -18,108 +16,103 @@ const App = () => {
     { name: "MacBook Air", price: 0, category: "Laptop", image: "" },
     { name: "Dell XPS", price: 0, category: "Laptop", image: "" },
 
-    { name: "Sony WH-1000XM5", price: 0, category: "Headphones", image: "" },
-    { name: "AirPods Pro 2", price: 0, category: "Headphones", image: "" },
-    { name: "JBL Tune 760NC", price: 0, category: "Headphones", image: "" },
-
-    { name: "iPad Pro", price: 0, category: "Tablet", image: "" },
-    { name: "Samsung Galaxy Tab S9", price: 0, category: "Tablet", image: "" },
-    { name: "Lenovo Tab P12", price: 0, category: "Tablet", image: "" },
-
+    { name: "Sony WH-1000XM5", price: 0, category: "Headphone", image: "" },
+    { name: "AirPods Pro 2", price: 0, category: "Headphone", image: "" },
+    { name: "JBL Tune 760NC", price: 0, category: "Headphone", image: "" },
   ]);
+
+  // BACKUP ORIGINAL LIST
+  const [filterProduct, setFilterProduct] = useState([]);
 
   useEffect(() => {
 
     const fetchData = async () => {
       try {
 
-        // mobile data 
-        const response1 = await fetch("https://dummyjson.com/products/category/smartphones")
-        const fetchMobiles = await response1.json();
-
-        // laptop data 
-        const response2 = await fetch("https://dummyjson.com/products/category/laptops")
-        const fetchLaptops = await response2.json()
-
-        // headPhones data 
-        const response3 = await fetch("https://dummyjson.com/products/category/mobile-accessories")
-        const fetchHeadPhones = await response3.json()
+        const mobiles = await fetch("https://dummyjson.com/products/category/smartphones").then(res => res.json());
+        const laptops = await fetch("https://dummyjson.com/products/category/laptops").then(res => res.json());
+        const headphones = await fetch("https://dummyjson.com/products/category/mobile-accessories").then(res => res.json());
 
         setProducts(prevProducts => {
-          return prevProducts.map((product, index) => {
+          const updated = prevProducts.map((product, index) => {
+
             if (product.category === "Mobile") {
               return {
                 ...product,
-                price: fetchMobiles.products[index]?.price || "",
-                image: fetchMobiles.products[index]?.thumbnail || ""
+                price: mobiles.products[index]?.price || "",
+                image: mobiles.products[index]?.thumbnail || ""
               };
-            } else if (product.category === "Laptop") {
+            }
+
+            if (product.category === "Laptop") {
               return {
                 ...product,
-                price: fetchLaptops.products[index]?.price || "",
-                image: fetchLaptops.products[index]?.thumbnail || ""
-              }
-            }else {
-              return{
-                ...product,
-                price: fetchHeadPhones.products[index]?.price || "",
-                image: fetchHeadPhones.products[index]?.thumbnail || ""
-              }
+                price: laptops.products[index]?.price || "",
+                image: laptops.products[index]?.thumbnail || ""
+              };
             }
-            
-            return product;
+
+            return {
+              ...product,
+              price: headphones.products[index]?.price || "",
+              image: headphones.products[index]?.thumbnail || ""
+            };
           });
+
+          // ORIGINAL LIST COPY
+          setFilterProduct(updated);
+
+          return updated;
         });
 
       } catch (error) {
-
+        console.log(error);
       }
-    }
+    };
 
-
-    fetchData()
+    fetchData();
 
   }, []);
 
-  useEffect(() => {
-    for (let i = 0; i < products.length; i++)
-      console.log(products[i].image)
-  }, [products])
+  // CATEGORY FILTER — FIXED
+  const handleClick = (e) => {
+    const value = e.target.value;
 
-  const handleClick = ((e) => {
-    e.preventDefault()
-    if (e.target.value === "laptop") {
-      console.log("hello")
-    } else if (e.target.value === "All") {
-      console.log("all")
+    if (value === "All") {
+      setProducts(filterProduct);
+    } else {
+      setProducts(filterProduct.filter(p => p.category === value));
     }
-  })
-  // *************************************************************************************
+  };
+
   return (
     <div>
       <nav className='flex flex-wrap justify-around bg-gray-100 p-4'>
-        <div className='w-sm'>
-          <input type="text"
+        <div>
+          <input
+            type="text"
             placeholder='Search Product'
-            // onChange={() =>}
             className='px-4 py-2 rounded-2xl border-1'
           />
         </div>
-        <div className='flex justify-around w-sm gap-3'>
-          {
-            categories.map((cat) =>
-              <button key={cat}
-                onClick={handleClick}
-                value={cat}
-                className='bg-gray-300 hover:bg-gray-400 cursor-pointer px-6 rounded-2xl text-gray-800'
-              >{cat}</button>
-            )
-          }
+
+        <div className='flex gap-3'>
+          {categories.map((cat) =>
+            <button key={cat}
+              onClick={handleClick}
+              value={cat}
+              className='bg-gray-300 hover:bg-gray-400 px-6 rounded-2xl'
+            >
+              {cat}
+            </button>
+          )}
         </div>
+
         <div>
-          <select onChange={(e) => {
-            setSort(e.target.value)
-          }} className=' px-4 py-2 rounded-2xl border-1'>
+          <select
+            onChange={(e) => setSort(e.target.value)}
+            className='px-4 py-2 rounded-2xl border-1'
+          >
             <option value="">Sort by price</option>
             <option value="high">High →Low</option>
             <option value="low">Low → High</option>
@@ -127,22 +120,45 @@ const App = () => {
         </div>
       </nav>
 
-      {/* hero section  */}
-      <div className='h-screen flex flex-wrap justify-center items-center gap-8'>
-
+      {/* Product Section */}
+      <div className='flex flex-wrap justify-center gap-8 p-6'>
         {products.map((p, index) => (
-          <div className='border-1 h-90 p-4 flex flex-col items-center gap-3' key={index}>
-            <img src={p.image} alt={p.name} width="200" />
-            <h3>{p.name}</h3>
-            <p>Price: ${p.price}</p>
-            <p>Category: {p.category}</p>
+          <div
+            key={index}
+            className="
+    w-64 
+    bg-white 
+    border-0 
+    rounded-3xl 
+    shadow-lg 
+    p-6 
+    flex flex-col items-center gap-4
+    transition-transform duration-300 ease-in-out
+    hover:-translate-y-4 
+    hover:shadow-2xl
+  "
+          >
+            <div className="w-full h-48 flex justify-center items-center overflow-hidden rounded-2xl">
+              <img
+                src={p.image}
+                alt={p.name}
+                className="object-contain h-full w-full"
+              />
+            </div>
+
+            <h3 className="text-lg font-bold text-gray-800 text-center">{p.name}</h3>
+            <p className="text-gray-600 font-semibold">Price: ${p.price}</p>
+            <p className="text-gray-500 text-sm">{p.category}</p>
+
+            <button className="mt-2 w-full bg-blue-500 text-white font-semibold py-2 rounded-xl hover:bg-blue-600 transition-colors duration-300">
+              Add to Cart
+            </button>
           </div>
+
         ))}
-        
       </div>
     </div>
   )
 }
 
 export default App
-
